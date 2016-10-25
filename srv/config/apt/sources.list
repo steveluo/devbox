@@ -1,0 +1,27 @@
+deb http://cn.archive.ubuntu.com/ubuntu trusty main restricted
+deb http://cn.archive.ubuntu.com/ubuntu trusty-updates main restricted
+
+deb http://cn.archive.ubuntu.com/ubuntu trusty universe
+deb http://cn.archive.ubuntu.com/ubuntu trusty-updates universe
+
+deb http://cn.archive.ubuntu.com/ubuntu trusty multiverse
+deb http://cn.archive.ubuntu.com/ubuntu trusty-updates multiverse
+
+deb http://cn.archive.ubuntu.com/ubuntu trusty-backports main restricted universe multiverse
+
+deb http://security.ubuntu.com/ubuntu trusty-security main restricted
+deb http://security.ubuntu.com/ubuntu trusty-security universe
+deb http://security.ubuntu.com/ubuntu trusty-security multiverse
+
+# Provides JDK
+deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main
+deb-src http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main
+
+# Provides Nginx mainline
+# deb http://nginx.org/packages/mainline/ubuntu/ trusty nginx
+# deb-src http://nginx.org/packages/mainline/ubuntu/ trusty nginx
+
+# Provides PHP7
+# deb http://ppa.launchpad.net/ondrej/php/ubuntu trusty main
+# deb-src http://ppa.launchpad.net/ondrej/php/ubuntu trusty main
+
