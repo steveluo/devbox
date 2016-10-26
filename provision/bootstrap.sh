@@ -2,8 +2,9 @@
 
 # Variables
 
+USER="vagrant"
 noroot() {
-    sudo -EH -u "vagrant" "$@";
+    sudo -EH -u "$USER" "$@";
 }
 
 network_detection() {
@@ -85,7 +86,7 @@ install_mysql() {
 
 
   cp "/srv/config/mysql/my.cnf" "/etc/mysql/my.cnf"
-  cp "/srv/config/mysql/root-my.cnf" "/home/vagrant/.my.cnf"
+  cp "/srv/config/mysql/root-my.cnf" "/home/$USER/.my.cnf"
 
   if [[ -f "/srv/database/init.sql" ]]; then
     echo -e "\nImport MySQL init sql..."
@@ -151,25 +152,12 @@ install_nginx() {
 #   phpenmod mbstring
 # }
 
-install_mailcatcher() {
-  echo -e "\nInstall Mailcatcher ..."
-  apt-get install -y software-properties-common libsqlite3-dev
-  gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
-  curl --silent -L "https://get.rvm.io" | sudo bash -s stable --ruby
-  source "/usr/local/rvm/scripts/rvm"
-
-  /usr/local/rvm/bin/rvm default@mailcatcher --create do gem install mailcatcher --no-rdoc --no-ri
-  /usr/local/rvm/bin/rvm wrapper default@mailcatcher --no-prefix mailcatcher catchmail
-
-  cp "/srv/config/mailcatcher/mailcatcher.conf" "/etc/init/mailcatcher.conf"
-}
-
 install_fasd() {
-  git clone https://github.com/clvv/fasd.git /home/vagrant/fasd
-  cd /home/vagrant/fasd
+  git clone ://github.com/clvv/fasd.git /home/$USER/fasd
+  cd /home/$USER/fasd
   make install
   cd
-  rm -rf /home/vagrant/fasd
+  rm -rf /home/$USER/fasd
 }
 
 NVM_DIR="/opt/nvm"
@@ -190,7 +178,7 @@ install_nvm() {
   source $NVM_DIR/nvm.sh
 
   echo -e "\nInstalling gulp bower"
-  nvm install node
+  nvm install 6 # node 6
   nvm use default
   npm install -g gulp bower grunt yo
 
@@ -201,15 +189,52 @@ install_nvm() {
 setup_dotfiles() {
   echo -e "\nUpdating user dot files ..."
 
-  git clone "https://github.com/steveluo/vagrant-dotfiles.git" /home/vagrant/.dotfiles
-  chown -R vagrant:vagrant /home/vagrant/.dotfiles
-  noroot sh /home/vagrant/.dotfiles/symlink-setup.sh
+  git clone "git://github.com/steveluo/ubuntu-dotfiles.git" /home/$USER/.dotfiles
+  chown -R $USER:$USER /home/$USER/.dotfiles
+  noroot sh /home/$USER/.dotfiles/symlink-setup.sh
 
   # Install vim plugins
   # noroot vim -u ~/.dotfiles/vimrc.install +PlugInstall +qa
 
   noroot cat /srv/keys/vagrant.pub >> ~/.ssh/authorized_keys
-  chsh -s /usr/bin/zsh vagrant
+  chsh -s /usr/bin/zsh $USER
+}
+
+install_gnome() {
+  echo -e "\nInstall Gnome ..."
+  apt-get -y install ubuntu-gnome-desktop
+  apt-get -y install virtualbox-guest-dkms virtualbox-guest-utils virtualbox-guest-x11
+
+  # apt-get -y purge libreoffice*
+  # apt-get -y purge aisleriot gnome-sudoku mahjongg ace-of-penguins gnomine gbrainy
+  # apt-get -y purge gnome-chess gnome-mines cheese
+  # apt-get -y autoremove
+}
+
+install_developer_tools() {
+  add-apt-repository -y ppa:ubuntu-desktop/ubuntu-make
+  apt-get -y update
+
+  apt-get -y install ubuntu-make
+  apt-get -y install mysql-workbench
+
+  # install Chromium Browser
+  apt-get -y install chromium-browser
+
+  #install Guake
+  apt-get install -y guake
+  cp /usr/share/applications/guake.desktop /etc/xdg/autostart/
+
+  # install gvim
+  apt-get -y install vim-gtk
+
+  #install IDEA community edition
+  su -c 'umake ide idea /home/$USER/.local/share/umake/ide/idea' $USER
+
+  # increase Inotify limit (see
+  # https://confluence.jetbrains.com/display/IDEADEV/Inotify+Watches+Limit)
+  echo "fs.inotify.max_user_watches = 524288" > /etc/sysctl.d/60-inotify.conf
+  sysctl -p --system
 }
 
 update_environment() {
@@ -230,6 +255,19 @@ cleanup() {
 }
 
 
+install_mailcatcher() {
+  echo -e "\nInstall Mailcatcher ..."
+  apt-get install -y software-properties-common libsqlite3-dev
+  gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+  curl --silent -L "https://get.rvm.io" | sudo bash -s stable --ruby
+  source "/usr/local/rvm/scripts/rvm"
+
+  /usr/local/rvm/bin/rvm default@mailcatcher --create do gem install mailcatcher --no-rdoc --no-ri
+  /usr/local/rvm/bin/rvm wrapper default@mailcatcher --no-prefix mailcatcher catchmail
+
+  cp "/srv/config/mailcatcher/mailcatcher.conf" "/etc/init/mailcatcher.conf"
+}
+
 ### SCRIPT
 
 network_check
@@ -247,10 +285,14 @@ install_maven
 install_ant
 install_nvm
 
+install_gnome
+install_developer_tools
+
 install_fasd
 setup_dotfiles
-
 update_environment
+
+# install_developer_tools
 
 cleanup
 

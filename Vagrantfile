@@ -8,18 +8,20 @@
 Vagrant.configure(2) do |config|
 
   # Default Ubuntu Box
-  config.vm.box = "ubuntu14"
+  config.vm.box = "ubuntu/trusty64"
 
   # VirtualBox Configuration
   config.vm.provider :virtualbox do |v|
-    v.customize ['modifyvm', :id, '--name', 'gitq-devbox']
+    v.customize ['modifyvm', :id, '--name', 'trusty-devbox']
     v.customize ['modifyvm', :id, '--memory', '4096']
+    v.customize ["modifyvm", :id, "--cpus", "2"]
 
-    # v.gui = true
-    # v.customize ['modifyvm', :id, '--vram', '64']
+    v.gui = true
+    v.customize ['modifyvm', :id, '--vram', '16']
     # v.customize ['modifyvm', :id, '--accelerate3d', 'on']
-    # v.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
-    # v.customize ["modifyvm", :id, "--draganddrop", "bidirectional"]
+    v.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
+    v.customize ["modifyvm", :id, "--draganddrop", "bidirectional"]
+    v.customize ["modifyvm", :id, "--graphicscontroller", "vboxvga"]
 
     # Fix for slow external network connection
     v.customize ['modifyvm', :id, '--natdnshostresolver1', 'on']
@@ -39,16 +41,24 @@ Vagrant.configure(2) do |config|
   # config.ssh.private_key_path = "srv/keys/vagrant"
   # config.ssh.insert_key = false
 
-  config.vm.hostname = "devbox"
+  config.vm.hostname = "xenial-box"
 
   # Private Network
-  config.vm.network :private_network, id: "devbox_primary", ip: "10.0.0.10"
+  config.vm.network :private_network, id: "devbox_primary", ip: "10.0.0.20"
+
+  # Public Network
+  # config.vm.network "public_network",
+  #     bridge: "en1: Wi-Fi (AirPort)",
+  #     use_dhcp_assigned_default_route: true
 
   # Port Forwarding
   # config.vm.network :forwarded_port, guest: 8080, host: 8080
 
   # Drive Mapping
   config.vm.synced_folder "srv", "/srv"
+    # :nfs => true,
+    # :mount_options => ['actimeo=2']
+
 
   # config.vm.provision :shell do |shell|
   #   shell.inline = "
@@ -58,8 +68,8 @@ Vagrant.configure(2) do |config|
   # end
   # Provisions
   #
-  # config.vm.provision :shell, :path => "provision/setup.sh"
   config.vm.provision :shell, :path => "provision/bootstrap.sh"
+  # config.vm.provision :shell, :path => "patch.sh"
 
   # config.vm.provision :shell do |shell|
   #   shell.inline = "
